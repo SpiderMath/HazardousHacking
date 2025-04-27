@@ -8,6 +8,8 @@ This project implements a decentralized battle game using Ethereum smart contrac
 - **MageNFT**: Mint Mage NFTs, which can be used in battles.
 - **BattleManager**: Fight bosses with your Mage NFTs by executing predefined moves.
 
+## Play the Game [here](./frontend/)
+
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
