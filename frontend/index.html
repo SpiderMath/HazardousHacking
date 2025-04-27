@@ -1,41 +1,63 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Mage Battle DApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script defer src="app.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status, p {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .balances {
+            margin-top: 40px;
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <h1>Battle Game</h1>
 
-        <div class="wallet">
-            <button id="connectButton">Connect Wallet</button>
-            <p id="walletAddress">No wallet connected</p>
-        </div>
+    <h1>⚔️ Mage Battle DApp</h1>
 
-        <div class="battle">
-            <h2>Fight a Boss!</h2>
-            <label for="mageId">Enter Mage ID:</label>
-            <input type="number" id="mageId" placeholder="Enter your Mage ID" />
-            <label for="bossId">Enter Boss ID:</label>
-            <input type="number" id="bossId" placeholder="Enter Boss ID" />
-            
-            <div class="moves">
-                <label>Choose Moves (e.g. attack, heal):</label>
-                <input type="text" id="move1" placeholder="Move 1" />
-                <input type="text" id="move2" placeholder="Move 2" />
-                <input type="text" id="move3" placeholder="Move 3" />
-                <input type="text" id="move4" placeholder="Move 4" />
-                <input type="text" id="move5" placeholder="Move 5" />
-            </div>
-            <button id="fightButton">Fight!</button>
-            <p id="battleResult"></p>
-        </div>
+    <button id="connectWallet">🔌 Connect Wallet</button>
+    <br><br>
+
+    <button id="mintToken">🪙 Mint ChronoTokens</button>
+    <button id="burnToken">🔥 Burn ChronoTokens</button>
+    <br><br>
+
+    <button id="mintNFT">🧙‍♂️ Mint Mage NFT</button>
+    <br><br>
+
+    <button id="startBattle">⚔️ Start Battle</button>
+
+    <div id="status">Wallet not connected</div>
+
+    <div class="balances">
+        <p>🪙 Token Balance: <span id="tokenBalance">0</span></p>
+        <p>🧙‍♂️ NFT Balance: <span id="nftBalance">0</span></p>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>
