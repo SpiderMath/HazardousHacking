@@ -18,7 +18,7 @@ contract MageNFT is ERC721Enumerable, Ownable {
 
     constructor() ERC721("MageNFT", "MAGE") Ownable(msg.sender) {}
 
-    function mintMage(Element element) external {
+    function mintMage(Element element) public {
         uint256 tokenId = nextTokenId++;
         _safeMint(msg.sender, tokenId);
         mages[tokenId] = Mage(element, randomStrength());

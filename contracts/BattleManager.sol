@@ -1,79 +1,79 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
-import "./MageNFT.sol";
-import "./ChronoToken.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract BattleManager {
-    MageNFT public mageNFT;
-    ChronoToken public chronoToken;
-
-    // Initialize contract addresses for MageNFT and ChronoToken
-    constructor(address _mageNFT, address _chronoToken) {
-        mageNFT = MageNFT(_mageNFT);
-        chronoToken = ChronoToken(_chronoToken);
-    }
+    // Define the ChronoToken and MageNFT contract interfaces
+    IERC20 public chronoToken;
+    IERC721 public mageNFT;
 
     struct Boss {
         string name;
         uint256 health;
-        string[5] pattern; // Example pattern: ["attack", "attack", "shield", "attack", "heal"]
+        string[] moves;
     }
 
-    // Store all the bosses
-    Boss[] public bosses;
-
-    // Mapping to track the battle status
-    mapping(uint256 => bool) public battleInProgress;
-
-    // Add a new boss with a pattern of moves
-    function addBoss(string memory name, uint256 health, string[5] memory pattern) public {
-        bosses.push(Boss(name, health, pattern));
+    struct Mage {
+        string name;
+        uint256 health;
+        string[] moves;
     }
 
-    // Start a fight with a boss
-    function fightBoss(uint256 mageId, uint256 bossId, string[5] memory moves) external {
-        require(mageNFT.ownerOf(mageId) == msg.sender, "Not your mage");
-        require(!battleInProgress[mageId], "Battle already in progress");
+    // Mapping of boss IDs to Boss struct
+    mapping(uint256 => Boss) public bosses;
+    
+    // Mapping of mage IDs to Mage struct
+    mapping(uint256 => Mage) public mages;
+
+    event BattleResult(uint256 mageId, uint256 bossId, bool win, uint256 rewards);
+
+    constructor(address _chronoTokenAddress, address _mageNFTAddress) {
+        chronoToken = IERC20(_chronoTokenAddress);
+        mageNFT = IERC721(_mageNFTAddress);
+    }
+
+    // Set Boss moves (can be expanded)
+    function setBoss(uint256 bossId, string memory name, uint256 health, string[] memory moves) public {
+        bosses[bossId] = Boss(name, health, moves);
+    }
+
+    // Set Mage moves (can be expanded)
+    function setMage(uint256 mageId, string memory name, uint256 health, string[] memory moves) public {
+        mages[mageId] = Mage(name, health, moves);
+    }
+
+    // Start battle between Mage and Boss
+    function fightBoss(uint256 mageId, uint256 bossId, string[] memory mageMoves) public {
+        require(mageNFT.ownerOf(mageId) == msg.sender, "You do not own this Mage NFT");
+        Boss storage boss = bosses[bossId];
+        Mage storage mage = mages[mageId];
+
+        require(boss.health > 0, "Boss does not exist");
+        require(mage.health > 0, "Mage does not exist");
+
+        uint256 mageScore = calculateScore(mageMoves);
+        uint256 bossScore = calculateScore(boss.moves);
+
+        bool win = mageScore >= bossScore;
         
-        battleInProgress[mageId] = true;
+        uint256 rewards = 0;
 
-        // Get Mage details (element and strength)
-        (MageNFT.Element element, uint256 strength) = mageNFT.getMage(mageId);
-        Boss memory boss = bosses[bossId];
-
-        uint256 mageHp = strength;
-        uint256 bossHp = boss.health;
-
-        // Battle for 5 turns
-        for (uint i = 0; i < 5; i++) {
-            // Player's move
-            if (keccak256(bytes(moves[i])) == keccak256(bytes("attack"))) {
-                bossHp -= 20;
-            } else if (keccak256(bytes(moves[i])) == keccak256(bytes("heal"))) {
-                mageHp += 10;
-            }
-
-            // Boss's move
-            if (keccak256(bytes(boss.pattern[i])) == keccak256(bytes("attack"))) {
-                mageHp -= 20;
-            } else if (keccak256(bytes(boss.pattern[i])) == keccak256(bytes("heal"))) {
-                bossHp += 10;
-            } else if (keccak256(bytes(boss.pattern[i])) == keccak256(bytes("shield"))) {
-                bossHp += 5; // Shield adds 5 HP
-            }
+        if (win) {
+            // Reward the user for winning
+            rewards = 100 * 10**18; // 100 ChronoTokens as reward
+            chronoToken.transfer(msg.sender, rewards);
         }
 
-        // Determine the winner
-        if (mageHp > 0 && bossHp <= 0) {
-            // Player wins the battle, reward with ChronoTokens
-            chronoToken.transfer(msg.sender, 100 * 10 ** chronoToken.decimals());
-        } else if (mageHp <= 0) {
-            // Player lost, no reward
-            revert("Mage has been defeated");
-        }
+        emit BattleResult(mageId, bossId, win, rewards);
+    }
 
-        // Reset battle status
-        battleInProgress[mageId] = false;
+    // Calculate score based on moves
+    function calculateScore(string[] memory moves) private pure returns (uint256 score) {
+        for (uint i = 0; i < moves.length; i++) {
+            score += uint256(keccak256(abi.encodePacked(moves[i]))) % 10;
+        }
     }
 }
